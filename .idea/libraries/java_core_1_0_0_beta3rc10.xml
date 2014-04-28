@@ -1,0 +1,11 @@
+<component name="libraryTable">
+  <library name="java-core-1.0.0-beta3rc10">
+    <CLASSES>
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.couchbase.lite/java-core/1.0.0-beta3rc10/2cf48cba44162e403a61684db009b094b12e4d35/java-core-1.0.0-beta3rc10.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.couchbase.lite/java-core/1.0.0-beta3rc10/493b9d6689e64323ee7b1c854d5bd54a7e69269b/java-core-1.0.0-beta3rc10-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

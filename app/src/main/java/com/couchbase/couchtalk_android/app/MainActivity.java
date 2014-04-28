@@ -5,7 +5,11 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 
-import com.couchbase.lite.*;
+import com.couchbase.lite.android.AndroidContext;
+import com.couchbase.lite.Manager;
+import com.couchbase.lite.Database;
+import com.couchbase.lite.CouchbaseLiteException;
+import com.couchbase.lite.listener.LiteListener;
 import com.couchbase.lite.util.Log;
 
 import java.io.IOException;
@@ -29,7 +33,7 @@ public class MainActivity extends ActionBarActivity {
         // create a manager
         Manager manager = null;
         try {
-            manager = new Manager(getApplicationContext().getFilesDir(), Manager.DEFAULT_OPTIONS);
+            manager = new Manager(new AndroidContext(this), Manager.DEFAULT_OPTIONS);
         } catch (IOException e) {
             Log.e(TAG, "Cannot create manager object");
             return;
@@ -50,31 +54,10 @@ public class MainActivity extends ActionBarActivity {
             return;
         }
 
-
-        // get the current date and time
-        SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
-        Calendar calendar = GregorianCalendar.getInstance();
-        String currentTimeString = dateFormatter.format(calendar.getTime());
-
-        // create an object that contains data for a document
-        Map<String, Object> docContent = new HashMap<String, Object>();
-        docContent.put("message", "Hello Couchbase Lite");
-        docContent.put("creationDate", currentTimeString);
-        Log.d(TAG, "docContent=" + String.valueOf(docContent));
-
-        // create and store contents to actual document
-        Document document = database.createDocument();
-        try {
-            document.putProperties(docContent);
-        } catch (CouchbaseLiteException e) {
-            Log.e(TAG, "Cannot write document to database", e);
-        }
-
-        // fetch back document
-        String docID = document.getId();
-        Document retrievedDocument = database.getDocument(docID);
-        Log.d(TAG, "retrievedDocument=" + String.valueOf(retrievedDocument.getProperties()));
-        Log.d(TAG, "End Hello World App");
+        LiteListener listener = new LiteListener(manager, 59842);
+        //int boundPort = listener.getListenPort();
+        Thread thread = new Thread(listener);
+        thread.start();
     }
 
 

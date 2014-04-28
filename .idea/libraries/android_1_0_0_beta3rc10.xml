@@ -1,0 +1,10 @@
+<component name="libraryTable">
+  <library name="android-1.0.0-beta3rc10">
+    <CLASSES>
+      <root url="file://$PROJECT_DIR$/app/build/exploded-aar/com.couchbase.lite/android/1.0.0-beta3rc10/res" />
+      <root url="jar://$PROJECT_DIR$/app/build/exploded-aar/com.couchbase.lite/android/1.0.0-beta3rc10/classes.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
