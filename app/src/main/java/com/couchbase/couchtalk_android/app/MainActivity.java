@@ -13,11 +13,6 @@ import com.couchbase.lite.listener.LiteListener;
 import com.couchbase.lite.util.Log;
 
 import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.GregorianCalendar;
-import java.util.HashMap;
-import java.util.Map;
 
 
 public class MainActivity extends ActionBarActivity {
@@ -31,7 +26,7 @@ public class MainActivity extends ActionBarActivity {
         Log.d(TAG, "Begin Hello World App");
 
         // create a manager
-        Manager manager = null;
+        Manager manager;
         try {
             manager = new Manager(new AndroidContext(this), Manager.DEFAULT_OPTIONS);
         } catch (IOException e) {
@@ -40,19 +35,20 @@ public class MainActivity extends ActionBarActivity {
         }
 
         // create a name for the database and make sure the name is legal
-        String dbname = "hello";
+        String dbname = "couchtalk";
         if (!Manager.isValidDatabaseName(dbname)) {
             Log.e(TAG, "Bad database name");
             return;
         }
         // create a new database
-        Database database = null;
+        Database database;
         try {
-            database = manager.getDatabase(dbname);
+            database = manager.getDatabase("couchtalk");
         } catch (CouchbaseLiteException e) {
             Log.e(TAG, "Cannot get database");
             return;
         }
+        database.exists();
 
         LiteListener listener = new LiteListener(manager, 59842);
         //int boundPort = listener.getListenPort();
