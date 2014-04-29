@@ -5,6 +5,8 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import com.couchbase.lite.ReplicationFilter;
+import com.couchbase.lite.SavedRevision;
 import com.couchbase.lite.android.AndroidContext;
 import com.couchbase.lite.Manager;
 import com.couchbase.lite.Database;
@@ -13,9 +15,12 @@ import com.couchbase.lite.listener.LiteListener;
 import com.couchbase.lite.util.Log;
 
 import java.io.IOException;
+import java.util.Map;
 
 
 public class MainActivity extends ActionBarActivity {
+    //protected static final String HOST_URL = "http://sync.couchbasecloud.com/couchtalk-dev2";
+    protected static final String ITEM_TYPE = "com.couchbase.labs.couchtalk.message-item";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,6 +54,17 @@ public class MainActivity extends ActionBarActivity {
             return;
         }
         database.exists();
+
+        database.setFilter("app/roomItems", new ReplicationFilter() {
+            @Override
+            public boolean filter(SavedRevision revision, Map<String, Object> params) {
+                Map<String, Object> doc = revision.getProperties();
+                //return (ITEM_TYPE.equals(doc.get("type")) && doc.get("room").equals(params.get("room")));
+                // WORKAROUND: https://github.com/couchbase/couchbase-lite-android/issues/284
+                if (!ITEM_TYPE.equals(doc.get("type"))) return false;
+                return (params == null) || doc.get("room").equals(params.get("room"));
+            }
+        });
 
         LiteListener listener = new LiteListener(manager, 59842);
         //int boundPort = listener.getListenPort();
