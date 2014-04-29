@@ -10,16 +10,23 @@ import com.couchbase.lite.SavedRevision;
 import com.couchbase.lite.android.AndroidContext;
 import com.couchbase.lite.Manager;
 import com.couchbase.lite.Database;
+import com.couchbase.lite.DocumentChange;
+import com.couchbase.lite.replicator.Replication;
 import com.couchbase.lite.CouchbaseLiteException;
 import com.couchbase.lite.listener.LiteListener;
 import com.couchbase.lite.util.Log;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Map;
+import java.net.URL;
+import java.util.Set;
 
 
 public class MainActivity extends ActionBarActivity {
-    //protected static final String HOST_URL = "http://sync.couchbasecloud.com/couchtalk-dev2";
+    protected static final String HOST_URL = "http://sync.couchbasecloud.com/couchtalk-dev2";
     protected static final String ITEM_TYPE = "com.couchbase.labs.couchtalk.message-item";
 
     @Override
@@ -46,14 +53,14 @@ public class MainActivity extends ActionBarActivity {
             return;
         }
         // create a new database
-        Database database;
+        Database _database;
         try {
-            database = manager.getDatabase("couchtalk");
+            _database = manager.getDatabase("couchtalk");
         } catch (CouchbaseLiteException e) {
             Log.e(TAG, "Cannot get database");
             return;
         }
-        database.exists();
+        final Database database = _database;
 
         database.setFilter("app/roomItems", new ReplicationFilter() {
             @Override
@@ -65,6 +72,42 @@ public class MainActivity extends ActionBarActivity {
                 return (params == null) || doc.get("room").equals(params.get("room"));
             }
         });
+
+        URL centralHost;
+        try {
+            centralHost = new URL(HOST_URL);
+        } catch (MalformedURLException e) {
+            Log.e(TAG, "Bad host URL");
+            return;
+        }
+
+        Replication pushReplication = database.createPushReplication(centralHost);
+        pushReplication.setContinuous(true);
+        pushReplication.start();
+
+        final Replication pullReplication = database.createPullReplication(centralHost);
+        pullReplication.setContinuous(true);
+        // don't start until we have rooms to watch
+
+        final Set<String> roomsUsed = new HashSet<String>();
+        database.addChangeListener(new Database.ChangeListener() {
+            @Override
+            public void changed(Database.ChangeEvent event) {
+                for (DocumentChange change : event.getChanges()) {
+                    if (change.getSourceUrl() != null) continue;
+                    Map<String,Object> doc = database.getExistingDocument(change.getDocumentId()).getProperties();
+                    String room = ITEM_TYPE.equals(doc.get("type")) ? String.format("room-%s", doc.get("room")) : null;
+                    if (room != null && !roomsUsed.contains(room)) {
+                        roomsUsed.add(room);
+                        pullReplication.setChannels(new ArrayList<String>(roomsUsed));
+                        if (!pullReplication.isRunning()) pullReplication.start();
+                        Log.d(TAG, String.format("Now syncing with %s", pullReplication.getChannels()));
+                    }
+                }
+            }
+        });
+
+        // TODO: "easy URL" listener, local WiFi and IP address display
 
         LiteListener listener = new LiteListener(manager, 59842);
         //int boundPort = listener.getListenPort();
