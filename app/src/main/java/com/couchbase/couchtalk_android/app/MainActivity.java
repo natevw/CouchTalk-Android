@@ -2,8 +2,12 @@ package com.couchbase.couchtalk_android.app;
 
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+import android.text.format.Formatter;
 import android.view.Menu;
 import android.view.MenuItem;
+
+import android.net.wifi.WifiManager;
+import android.net.wifi.WifiInfo;
 
 import com.couchbase.lite.ReplicationFilter;
 import com.couchbase.lite.SavedRevision;
@@ -107,7 +111,13 @@ public class MainActivity extends ActionBarActivity {
             }
         });
 
-        // TODO: "easy URL" listener, local WiFi and IP address display
+        // TODO: "easy URL" listener, get local WiFi and IP address displayed in UI
+
+        WifiManager wifiManager = (WifiManager) this.getSystemService(this.WIFI_SERVICE);
+        WifiInfo wifiInfo = wifiManager.getConnectionInfo();
+        String ipAddress = Formatter.formatIpAddress(wifiInfo.getIpAddress());
+        String helperText = String.format("http://%s:%d — %s", ipAddress, 0, wifiInfo.getSSID());
+        Log.d(TAG, String.format("WiFi is %s", helperText));
 
         LiteListener listener = new LiteListener(manager, 59842);
         //int boundPort = listener.getListenPort();
