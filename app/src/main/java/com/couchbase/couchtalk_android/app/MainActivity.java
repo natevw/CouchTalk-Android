@@ -8,6 +8,7 @@ import android.view.MenuItem;
 
 import android.net.wifi.WifiManager;
 import android.net.wifi.WifiInfo;
+import android.widget.TextView;
 
 import com.couchbase.lite.ReplicationFilter;
 import com.couchbase.lite.SavedRevision;
@@ -111,13 +112,16 @@ public class MainActivity extends ActionBarActivity {
             }
         });
 
-        // TODO: "easy URL" listener, get local WiFi and IP address displayed in UI
+        int redirectPort = 0;
+        // TODO: "easy URL" listener
 
         WifiManager wifiManager = (WifiManager) this.getSystemService(this.WIFI_SERVICE);
         WifiInfo wifiInfo = wifiManager.getConnectionInfo();
         String ipAddress = Formatter.formatIpAddress(wifiInfo.getIpAddress());
-        String helperText = String.format("http://%s:%d — %s", ipAddress, 0, wifiInfo.getSSID());
+        String helperText = String.format("http://%s:%d — %s", ipAddress, redirectPort, wifiInfo.getSSID());
         Log.d(TAG, String.format("WiFi is %s", helperText));
+        TextView url_display = (TextView) findViewById(R.id.url_display);
+        url_display.setText(helperText);
 
         LiteListener listener = new LiteListener(manager, 59842);
         //int boundPort = listener.getListenPort();
