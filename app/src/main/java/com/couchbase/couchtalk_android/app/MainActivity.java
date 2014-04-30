@@ -38,8 +38,8 @@ public class MainActivity extends ActionBarActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        final String TAG = "HelloWorld";
-        Log.d(TAG, "Begin Hello World App");
+        final String TAG = "CouchTalk";
+        Log.d(TAG, "App has started");
 
         // create a manager
         Manager manager;
