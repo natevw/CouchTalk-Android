@@ -125,7 +125,7 @@ public class MainActivity extends ActionBarActivity {
         TextView url_display = (TextView) findViewById(R.id.url_display);
         url_display.setText(helperText);
 
-        LiteListener listener = new LiteListener(manager, 59842);
+        LiteListener listener = new LiteListener(manager, 59840);
         //int boundPort = listener.getListenPort();
         Thread thread = new Thread(listener);
         thread.start();
