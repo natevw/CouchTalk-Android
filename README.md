@@ -6,7 +6,9 @@ Basic mess of notes/prereqs:
 
 - for now at least use `./node_modules/.bin/grunt dev` in the iOS project to push app
 
-- prolly need to set up a redirect:
+- …i.e. `../CouchTalk-iOS/node_modules/.bin/couchapp push ../CouchTalk-iOS/lib/push.js http://192.168.0.42:59840/couchtalk`
+
+- with AVD emulator prolly need to set up a redirect (each launch…):
 
     // via http://stackoverflow.com/a/11025806/179583
     // see also <http://developer.android.com/tools/devices/emulator.html#emulatornetworking>
