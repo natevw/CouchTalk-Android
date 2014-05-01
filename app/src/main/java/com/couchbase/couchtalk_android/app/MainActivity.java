@@ -112,7 +112,6 @@ public class MainActivity extends ActionBarActivity {
             }
         });
 
-        // TODO: "easy URL" listener
         Redirector redirector = new Redirector();
         int redirectPort = redirector.getListenPort();
         new Thread(redirector).start();
