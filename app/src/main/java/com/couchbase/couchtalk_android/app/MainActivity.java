@@ -112,8 +112,10 @@ public class MainActivity extends ActionBarActivity {
             }
         });
 
-        int redirectPort = 0;
         // TODO: "easy URL" listener
+        Redirector redirector = new Redirector();
+        int redirectPort = redirector.getListenPort();
+        new Thread(redirector).start();
 
         WifiManager wifiManager = (WifiManager) this.getSystemService(this.WIFI_SERVICE);
         WifiInfo wifiInfo = wifiManager.getConnectionInfo();
