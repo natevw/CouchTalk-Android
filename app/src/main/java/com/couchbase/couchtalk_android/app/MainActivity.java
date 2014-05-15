@@ -94,23 +94,30 @@ public class MainActivity extends ActionBarActivity {
         pullReplication.setContinuous(true);
         // don't start until we have rooms to watch
 
-        final Set<String> roomsUsed = new HashSet<String>();
+        class RoomHandler {
+            protected Set<String> channelsUsed = new HashSet<String>();
+            public void subscribeToRoom(String room) {
+                String channel = String.format("room-%s", room);
+                if (!channelsUsed.contains(channel)) {
+                    channelsUsed.add(channel);
+                    pullReplication.setChannels(new ArrayList<String>(channelsUsed));
+                    if (!pullReplication.isRunning()) pullReplication.start();
+                    Log.d(TAG, String.format("Now syncing with %s", pullReplication.getChannels()));
+                }
+            }
+        }
+        final RoomHandler roomHandler = new RoomHandler();
         database.addChangeListener(new Database.ChangeListener() {
             @Override
             public void changed(Database.ChangeEvent event) {
                 for (DocumentChange change : event.getChanges()) {
                     if (change.getSourceUrl() != null) continue;
                     Map<String,Object> doc = database.getExistingDocument(change.getDocumentId()).getProperties();
-                    String room = ITEM_TYPE.equals(doc.get("type")) ? String.format("room-%s", doc.get("room")) : null;
-                    if (room != null && !roomsUsed.contains(room)) {
-                        roomsUsed.add(room);
-                        pullReplication.setChannels(new ArrayList<String>(roomsUsed));
-                        if (!pullReplication.isRunning()) pullReplication.start();
-                        Log.d(TAG, String.format("Now syncing with %s", pullReplication.getChannels()));
-                    }
+                    if (ITEM_TYPE.equals(doc.get("type"))) roomHandler.subscribeToRoom((String)doc.get("room"));
                 }
             }
         });
+        roomHandler.subscribeToRoom("howto");
 
         Redirector redirector = new Redirector();
         int redirectPort = redirector.getListenPort();
