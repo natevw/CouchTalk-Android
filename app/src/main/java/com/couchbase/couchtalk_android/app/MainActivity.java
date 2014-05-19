@@ -21,18 +21,58 @@ import com.couchbase.lite.CouchbaseLiteException;
 import com.couchbase.lite.listener.LiteListener;
 import com.couchbase.lite.util.Log;
 
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Map;
 import java.net.URL;
 import java.util.Set;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 
 public class MainActivity extends ActionBarActivity {
     protected static final String HOST_URL = "http://sync.couchbasecloud.com/couchtalk";
     protected static final String ITEM_TYPE = "com.couchbase.labs.couchtalk.message-item";
+
+    // NOTE: based heavliy on http://stackoverflow.com/a/17220010/179583
+    protected void unzipResource(int res, File target) {
+        try {
+            InputStream stream = this.getResources().openRawResource(res);
+            if (stream == null) {
+                throw new RuntimeException("Cannot open resource for unzipping.");
+            }
+            ZipInputStream zis = new ZipInputStream(stream);
+            ZipEntry entry;
+            while ((entry = zis.getNextEntry()) != null) {
+                // WORKAROUND: https://github.com/couchbase/couchbase-lite-android/issues/309#issuecomment-43538127
+                String name = entry.getName().toLowerCase();
+                File f = new File(target, entry.getName());
+                if (entry.isDirectory()) {
+                    if (!f.exists()) {
+                        f.mkdirs();
+                    }
+                } else {
+                    int size;
+                    byte[] buffer = new byte[2048];
+                    FileOutputStream fos = new FileOutputStream(f);
+                    BufferedOutputStream bos = new BufferedOutputStream(fos, buffer.length);
+                    while ((size = zis.read(buffer, 0, buffer.length)) != -1) {
+                        bos.write(buffer, 0, size);
+                    }
+                    bos.flush();
+                    bos.close();
+                }
+            }
+        } catch (IOException e) {
+            throw new RuntimeException("Cannot unzip resource.", e);
+        }
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,16 +91,15 @@ public class MainActivity extends ActionBarActivity {
             return;
         }
 
-        // create a name for the database and make sure the name is legal
-        String dbname = "couchtalk";
-        if (!Manager.isValidDatabaseName(dbname)) {
-            Log.e(TAG, "Bad database name");
-            return;
-        }
-        // create a new database
+        // setup database (copying initial data if needed)
         Database _database;
         try {
-            _database = manager.getDatabase("couchtalk");
+            _database = manager.getExistingDatabase("couchtalk");
+            if (_database == null) {
+                Log.d(TAG, "Database not found, extracting initial dataset.");
+                this.unzipResource(R.raw.couchtalk_canned_db, manager.getDirectory());
+                _database = manager.getExistingDatabase("couchtalk");
+            }
         } catch (CouchbaseLiteException e) {
             Log.e(TAG, "Cannot get database");
             return;
