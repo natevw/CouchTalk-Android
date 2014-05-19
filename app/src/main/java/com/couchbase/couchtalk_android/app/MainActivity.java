@@ -31,7 +31,7 @@ import java.util.Set;
 
 
 public class MainActivity extends ActionBarActivity {
-    protected static final String HOST_URL = "http://sync.couchbasecloud.com/couchtalk-dev2";
+    protected static final String HOST_URL = "http://sync.couchbasecloud.com/couchtalk";
     protected static final String ITEM_TYPE = "com.couchbase.labs.couchtalk.message-item";
 
     @Override
@@ -131,7 +131,7 @@ public class MainActivity extends ActionBarActivity {
         TextView url_display = (TextView) findViewById(R.id.url_display);
         url_display.setText(helperText);
 
-        LiteListener listener = new LiteListener(manager, 59840);
+        LiteListener listener = new LiteListener(manager, 59840, null);
         //int boundPort = listener.getListenPort();
         Thread thread = new Thread(listener);
         thread.start();
