@@ -1,5 +1,6 @@
 package com.couchbase.couchtalk_android.app;
 
+import android.content.res.AssetManager;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.text.format.Formatter;
@@ -28,6 +29,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.net.URL;
@@ -40,47 +42,13 @@ public class MainActivity extends ActionBarActivity {
     protected static final String HOST_URL = "http://sync.couchbasecloud.com/couchtalk";
     protected static final String ITEM_TYPE = "com.couchbase.labs.couchtalk.message-item";
 
-    // NOTE: based heavliy on http://stackoverflow.com/a/17220010/179583
-    protected void unzipResource(int res, File target) {
-        try {
-            InputStream stream = this.getResources().openRawResource(res);
-            if (stream == null) {
-                throw new RuntimeException("Cannot open resource for unzipping.");
-            }
-            ZipInputStream zis = new ZipInputStream(stream);
-            ZipEntry entry;
-            while ((entry = zis.getNextEntry()) != null) {
-                // WORKAROUND: https://github.com/couchbase/couchbase-lite-android/issues/309#issuecomment-43538127
-                String name = entry.getName().toLowerCase();
-                File f = new File(target, entry.getName());
-                if (entry.isDirectory()) {
-                    if (!f.exists()) {
-                        f.mkdirs();
-                    }
-                } else {
-                    int size;
-                    byte[] buffer = new byte[2048];
-                    FileOutputStream fos = new FileOutputStream(f);
-                    BufferedOutputStream bos = new BufferedOutputStream(fos, buffer.length);
-                    while ((size = zis.read(buffer, 0, buffer.length)) != -1) {
-                        bos.write(buffer, 0, size);
-                    }
-                    bos.flush();
-                    bos.close();
-                }
-            }
-        } catch (IOException e) {
-            throw new RuntimeException("Cannot unzip resource.", e);
-        }
-    }
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
         final String TAG = "CouchTalk";
-        Log.d(TAG, "App has started");
+        Log.i(TAG, "App has started");
 
         // create a manager
         Manager manager;
@@ -96,8 +64,22 @@ public class MainActivity extends ActionBarActivity {
         try {
             _database = manager.getExistingDatabase("couchtalk");
             if (_database == null) {
-                Log.d(TAG, "Database not found, extracting initial dataset.");
-                this.unzipResource(R.raw.couchtalk_canned_db, manager.getDirectory());
+                Log.i(TAG, "Database not found, extracting initial dataset.");
+                try {
+                    AssetManager assets = this.getAssets();
+                    InputStream cannedDb = assets.open("couchtalk.cblite");
+                    String attsFolder = "couchtalk attachments";
+                    HashMap<String, InputStream> cannedAtts = new HashMap<String, InputStream>();
+                    for (String attName : assets.list(attsFolder)) {
+                        InputStream att = assets.open(String.format("%s/%s", attsFolder, attName));
+                        Log.d(TAG, String.format("Loading attachment %s", attName));
+                        cannedAtts.put(attName.toLowerCase(), att);
+                    }
+                    manager.replaceDatabase("couchtalk", cannedDb, cannedAtts);
+                } catch (IOException e) {
+                    Log.e(TAG, String.format("Couldn't load canned database. %s", e));
+                }
+                // HACK: intentionally may remain `null` so app crashes instead of silent trouble…
                 _database = manager.getExistingDatabase("couchtalk");
             }
         } catch (CouchbaseLiteException e) {
@@ -141,7 +123,7 @@ public class MainActivity extends ActionBarActivity {
                     channelsUsed.add(channel);
                     pullReplication.setChannels(new ArrayList<String>(channelsUsed));
                     if (!pullReplication.isRunning()) pullReplication.start();
-                    Log.d(TAG, String.format("Now syncing with %s", pullReplication.getChannels()));
+                    Log.i(TAG, String.format("Now syncing with %s", pullReplication.getChannels()));
                 }
             }
         }
@@ -166,7 +148,7 @@ public class MainActivity extends ActionBarActivity {
         WifiInfo wifiInfo = wifiManager.getConnectionInfo();
         String ipAddress = Formatter.formatIpAddress(wifiInfo.getIpAddress());
         String helperText = String.format("http://%s:%d — %s", ipAddress, redirectPort, wifiInfo.getSSID());
-        Log.d(TAG, String.format("WiFi is %s", helperText));
+        Log.i(TAG, String.format("WiFi is %s", helperText));
         TextView url_display = (TextView) findViewById(R.id.url_display);
         url_display.setText(helperText);
 
