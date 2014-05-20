@@ -22,9 +22,6 @@ import com.couchbase.lite.CouchbaseLiteException;
 import com.couchbase.lite.listener.LiteListener;
 import com.couchbase.lite.util.Log;
 
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
@@ -34,8 +31,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.net.URL;
 import java.util.Set;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
 
 
 public class MainActivity extends ActionBarActivity {
