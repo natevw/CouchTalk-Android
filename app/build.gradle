@@ -33,7 +33,7 @@ dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
 
     // via https://github.com/couchbase/couchbase-lite-android-liteserv/commit/fb85c52d0f6fd94e574e0a2b493c3c2dcde0565e
-    compile 'com.couchbase.lite:couchbase-lite-android:1.0.0-beta3rc11'
+    compile 'com.couchbase.lite:couchbase-lite-android:1.0.0'
     //compile 'com.couchbase.lite:java-javascript:1.0.0-beta3'
-    compile 'com.couchbase.lite:couchbase-lite-java-listener:1.0.0-beta3rc11'
+    compile 'com.couchbase.lite:couchbase-lite-java-listener:1.0.0'
 }
