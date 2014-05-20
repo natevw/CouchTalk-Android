@@ -122,8 +122,12 @@ public class MainActivity extends ActionBarActivity {
                 if (!channelsUsed.contains(channel)) {
                     channelsUsed.add(channel);
                     pullReplication.setChannels(new ArrayList<String>(channelsUsed));
-                    if (!pullReplication.isRunning()) pullReplication.start();
-                    Log.i(TAG, String.format("Now syncing with %s", pullReplication.getChannels()));
+                    if (!pullReplication.isRunning()) {
+                        pullReplication.start();
+                    } else {
+                        pullReplication.restart();
+                    }
+                    Log.d(TAG, String.format("Now syncing with %s", pullReplication.getChannels()));
                 }
             }
         }
