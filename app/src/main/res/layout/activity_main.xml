@@ -9,8 +9,17 @@
     tools:context="com.couchbase.couchtalk_android.app.MainActivity">
 
     <TextView
-        android:layout_width="wrap_content"
+        android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/url_display" />
+        android:id="@+id/urlDisplay"
+        android:text="[URL goes here]" />
+
+    <TextView
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/urlDisplay"
+        android:id="@+id/roomList"
+        android:text="[Rooms list]"
+        android:layout_marginTop="16dp" />
 
 </RelativeLayout>

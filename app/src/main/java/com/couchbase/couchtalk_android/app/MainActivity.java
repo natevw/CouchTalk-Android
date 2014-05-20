@@ -110,8 +110,10 @@ public class MainActivity extends ActionBarActivity {
         pullReplication.setContinuous(true);
         // don't start until we have rooms to watch
 
+        final TextView roomDisplay = (TextView) findViewById(R.id.roomList);
         class RoomHandler {
             protected Set<String> channelsUsed = new HashSet<String>();
+            protected ArrayList<String> roomNames = new ArrayList<String>();
             public void subscribeToRoom(String room) {
                 String channel = String.format("room-%s", room);
                 if (!channelsUsed.contains(channel)) {
@@ -122,7 +124,17 @@ public class MainActivity extends ActionBarActivity {
                     } else {
                         pullReplication.restart();
                     }
-                    Log.d(TAG, String.format("Now syncing with %s", pullReplication.getChannels()));
+                    Log.i(TAG, String.format("Now syncing with %s", pullReplication.getChannels()));
+
+                    roomNames.add(room);
+                    StringBuilder roomJoiner = new StringBuilder();
+                    boolean first = true;
+                    for (String s : roomNames) {
+                        if (!first) roomJoiner.append(", ");
+                        else first = false;
+                        roomJoiner.append(s);
+                    }
+                    roomDisplay.setText("Syncing rooms:\n"+roomJoiner.toString());
                 }
             }
         }
@@ -132,8 +144,13 @@ public class MainActivity extends ActionBarActivity {
             public void changed(Database.ChangeEvent event) {
                 for (DocumentChange change : event.getChanges()) {
                     if (change.getSourceUrl() != null) continue;
-                    Map<String,Object> doc = database.getExistingDocument(change.getDocumentId()).getProperties();
-                    if (ITEM_TYPE.equals(doc.get("type"))) roomHandler.subscribeToRoom((String)doc.get("room"));
+                    final Map<String,Object> doc = database.getExistingDocument(change.getDocumentId()).getProperties();
+                    if (ITEM_TYPE.equals(doc.get("type"))) runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            roomHandler.subscribeToRoom((String)doc.get("room"));
+                        }
+                    });
                 }
             }
         });
@@ -148,8 +165,8 @@ public class MainActivity extends ActionBarActivity {
         String ipAddress = Formatter.formatIpAddress(wifiInfo.getIpAddress());
         String helperText = String.format("http://%s:%d — %s", ipAddress, redirectPort, wifiInfo.getSSID());
         Log.i(TAG, String.format("WiFi is %s", helperText));
-        TextView url_display = (TextView) findViewById(R.id.url_display);
-        url_display.setText(helperText);
+        TextView urlDisplay = (TextView) findViewById(R.id.urlDisplay);
+        urlDisplay.setText(helperText);
 
         LiteListener listener = new LiteListener(manager, 59840, null);
         //int boundPort = listener.getListenPort();
